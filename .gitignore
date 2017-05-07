@@ -1,3 +1,7 @@
 .env/
+*.py[cod]
 *.pkl
+*.swp
+*/events.*
+*.rex
 

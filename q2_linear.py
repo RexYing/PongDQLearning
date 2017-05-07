@@ -55,7 +55,16 @@ class Linear(DQN):
         ##############################################################
         ################YOUR CODE HERE (6-15 lines) ##################
 
-        pass
+       	self.s = tf.placeholder(tf.uint8, 
+				shape=(None, state_shape[0], state_shape[1], state_shape[2] * self.config.state_history), 
+				name='states')
+       	self.a = tf.placeholder(tf.int32, shape=(None), name='actions')
+	self.r = tf.placeholder(tf.float32, shape=(None), name='rewards')
+	self.sp = tf.placeholder(tf.uint8, 
+				 shape=(None, state_shape[0], state_shape[1], state_shape[2] * self.config.state_history),
+				 name='next_states')
+	self.done_mask = tf.placeholder(tf.bool, shape=(None), name='done')
+	self.lr = tf.placeholder(tf.float32, shape=(None), name='lr')
 
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -96,7 +105,14 @@ class Linear(DQN):
         ##############################################################
         ################ YOUR CODE HERE - 2-3 lines ################## 
         
-        pass
+	shape = state.get_shape().as_list()
+	flattened_dim = shape[1] * shape[2] * shape[3]
+	state_flattened = tf.reshape(state, [-1, flattened_dim])
+        out = layers.fully_connected(state_flattened, 
+		     num_outputs=num_actions,
+		     activation_fn=None,
+		     trainable=True,
+		     scope=scope)
 
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -143,7 +159,10 @@ class Linear(DQN):
         ##############################################################
         ################### YOUR CODE HERE - 5-10 lines #############
         
-        pass
+        q_collection = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=q_scope)
+	target_q_collection = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=target_q_scope)
+	assign_ops = [tf.assign(target_q_collection[i], q_collection[i]) for i in range(len(q_collection))]
+	self.update_target_op = tf.group(*assign_ops)
 
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -183,8 +202,18 @@ class Linear(DQN):
         """
         ##############################################################
         ##################### YOUR CODE HERE - 4-5 lines #############
+        done_mask = 1 - tf.cast(self.done_mask, tf.float32)
+	# [batch_size]
+	q_samp = self.r + self.config.gamma * tf.reduce_max(target_q, axis=1) * done_mask
 
-        pass
+        num_actions = self.env.action_space.n
+	# [batch_size, num_actions]
+	a_one_hot = tf.one_hot(self.a, depth=num_actions)
+
+	# [batch_size]
+	losses = q_samp - tf.reduce_sum(q * a_one_hot, axis=1)
+	losses = losses * losses
+	self.loss = tf.reduce_mean(losses)
 
         ##############################################################
         ######################## END YOUR CODE #######################
@@ -221,7 +250,14 @@ class Linear(DQN):
         ##############################################################
         #################### YOUR CODE HERE - 8-12 lines #############
 
-        pass
+        optimizer = tf.train.AdamOptimizer(learning_rate=self.lr)
+        var_collection = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
+	grads_and_vars = optimizer.compute_gradients(self.loss, var_list=var_collection)
+	if self.config.grad_clip:
+	    grads_and_vars = [(tf.clip_by_norm(grad, self.config.clip_val) if grad is not None else None, var) 
+		    for grad, var in grads_and_vars]
+	self.train_op = optimizer.apply_gradients(grads_and_vars)
+	self.grad_norm = tf.global_norm([grad for grad, _ in grads_and_vars])
         
         ##############################################################
         ######################## END YOUR CODE #######################

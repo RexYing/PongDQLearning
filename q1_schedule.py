@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from utils.test_env import EnvTest
 
 
@@ -35,7 +36,10 @@ class LinearSchedule(object):
         ##############################################################
         ################ YOUR CODE HERE - 3-4 lines ################## 
 
-        pass
+	if t > self.nsteps:
+	    self.epsilon = self.eps_end
+	else:
+            self.epsilon = self.eps_begin - float(t) / self.nsteps * (self.eps_begin - self.eps_end)
 
         ##############################################################
         ######################## END YOUR CODE ############## ########
@@ -74,7 +78,10 @@ class LinearExploration(LinearSchedule):
         ##############################################################
         ################ YOUR CODE HERE - 4-5 lines ##################
 
-        pass
+        if random.random() < self.epsilon:
+            return self.env.action_space.sample()
+	else:
+	    return best_action
 
         ##############################################################
         ######################## END YOUR CODE ############## ########
@@ -98,7 +105,7 @@ def test1():
 def test2():
     env = EnvTest((5, 5, 1))
     exp_strat = LinearExploration(env, 1, 0, 10)
-    exp_strat.update(5)
+    exp_strat.update(5) 
     assert exp_strat.epsilon == 0.5, "Test 2 failed"
     print("Test2: ok")
 
