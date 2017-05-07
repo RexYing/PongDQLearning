@@ -111,6 +111,7 @@ class Linear(DQN):
         out = layers.fully_connected(state_flattened, 
 		     num_outputs=num_actions,
 		     activation_fn=None,
+		     reuse=reuse,
 		     trainable=True,
 		     scope=scope)
 

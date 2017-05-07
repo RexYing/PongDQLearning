@@ -54,7 +54,45 @@ class NatureQN(Linear):
         ##############################################################
         ################ YOUR CODE HERE - 10-15 lines ################ 
 
-        pass
+    	with tf.variable_scope(scope, reuse=reuse):
+    	    # 32 filters of 8x8 with stride 4
+            out = layers.conv2d(out, 
+    		     num_outputs=32,
+    		     kernel_size=8,
+    		     stride=4,
+    		     trainable=True,
+    		     reuse=reuse)
+    
+    	    # 64 filters of 4x4 with stride 2
+            out = layers.conv2d(out, 
+    		     num_outputs=64,
+    		     kernel_size=4,
+    		     stride=2,
+    		     trainable=True,
+    		     reuse=reuse)
+    
+    	    # 64 filters of 3x3 with stride 1
+            out = layers.conv2d(out, 
+    		     num_outputs=64,
+    		     kernel_size=3,
+    		     stride=1,
+    		     trainable=True,
+    		     reuse=reuse)
+    
+    	    shape = out.get_shape().as_list()
+    	    flattened_dim = shape[1] * shape[2] * shape[3]
+    	    out = tf.reshape(out, [-1, flattened_dim])
+    
+            out = layers.fully_connected(out, 
+    	    	     num_outputs=512,
+    	    	     reuse=reuse,
+    	    	     trainable=True)
+    
+            out = layers.fully_connected(out, 
+    	    	     num_outputs=num_actions,
+    	    	     activation_fn=None,
+    	    	     reuse=reuse,
+    	    	     trainable=True)
 
         ##############################################################
         ######################## END YOUR CODE #######################
