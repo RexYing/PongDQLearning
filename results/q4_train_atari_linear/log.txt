@@ -1,0 +1,6 @@
+2017-05-07 11:40:00,981:INFO: Making new env: Pong-v0
+2017-05-07 11:40:01,007:INFO: Creating monitor directory results/q4_train_atari_linear/monitor/
+2017-05-07 11:40:01,018:INFO: Starting new video recorder writing to /home/rex/PongDQLearning/results/q4_train_atari_linear/monitor/openaigym.video.0.23934.video000000.mp4
+2017-05-07 11:40:03,321:INFO: Finished writing results. You can upload them to the scoreboard via gym.upload('/home/rex/PongDQLearning/results/q4_train_atari_linear/monitor')
+2017-05-07 11:40:03,321:INFO: Evaluating...
+2017-05-07 11:40:50,815:INFO: Average reward: -20.92 +/- 0.04
